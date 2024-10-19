@@ -37,3 +37,9 @@ a {
     margin-left: 10px; 
     margin-right: 10px; 
 }
+
+.custom-navbar .welcome-text {
+    flex-grow: 1; 
+    text-align: center; 
+    color: white; 
+}

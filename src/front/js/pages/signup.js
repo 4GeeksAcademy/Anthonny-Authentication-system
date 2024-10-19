@@ -4,33 +4,31 @@ import { useNavigate } from "react-router-dom";
 const Signup = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState(""); // Nuevo estado para la confirmación de la contraseña
+    const [confirmPassword, setConfirmPassword] = useState(""); 
     const [errorMessage, setErrorMessage] = useState(null);
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
 
-        if (password !== confirmPassword) { // Verificación de coincidencia de contraseñas
+        if (password !== confirmPassword) {
             setErrorMessage("Las contraseñas no coinciden");
             return;
         }
 
-        const requestOptions = {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-        };
+        const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+        const userExists = existingUsers.some((user) => user.email === email);
 
-        try {
-            const response = await fetch("/api/signup", requestOptions); // URL del backend Flask
-            if (!response.ok) {
-                throw new Error("Registro fallido");
-            }
-            navigate("/login"); // Redirigir al login después del registro exitoso
-        } catch (error) {
-            setErrorMessage(error.message);
+        if (userExists) {
+            setErrorMessage("El usuario ya existe");
+            return;
         }
+
+        const newUser = { email, password };
+        existingUsers.push(newUser);
+        localStorage.setItem("users", JSON.stringify(existingUsers));
+
+        navigate("/login");
     };
 
     return (

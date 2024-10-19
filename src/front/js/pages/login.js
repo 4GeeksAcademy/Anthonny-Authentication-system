@@ -1,32 +1,29 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSession } from "../component/sessionContext";
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState(null);
     const navigate = useNavigate();
+    const { setUserEmail } = useSession();
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
 
-        const requestOptions = {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password })
-        };
+        const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
+        const user = existingUsers.find((user) => user.email === email);
 
-        try {
-            const response = await fetch("/api/login", requestOptions); // URL del backend Flask
-            if (!response.ok) {
-                throw new Error("Inicio de sesión fallido");
-            }
-            const data = await response.json();
-            sessionStorage.setItem("token", data.token); // Guardar token en sessionStorage
-            navigate("/private"); // Redirigir a la ruta privada después de iniciar sesión
-        } catch (error) {
-            setErrorMessage(error.message);
+        if (!user || user.password !== password) {
+            setErrorMessage("Credenciales incorrectas");
+            return;
         }
+
+        sessionStorage.setItem("userEmail", email);
+        sessionStorage.setItem("token", "fake-jwt-token");
+        setUserEmail(email);
+        navigate("/");
     };
 
     return (
