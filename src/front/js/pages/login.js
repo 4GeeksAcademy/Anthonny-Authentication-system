@@ -1,38 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSession } from "../component/sessionContext";
+import { Context } from "../store/appContext";
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState(null);
     const navigate = useNavigate();
-    const { setUserEmail } = useSession();
+    const { actions } = useContext(Context);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        const result = await actions.login(email, password);
 
-        const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
-        const user = existingUsers.find((user) => user.email === email);
-
-        if (!user || user.password !== password) {
-            setErrorMessage("Credenciales incorrectas");
-            return;
+        if (!result.success) {
+            setErrorMessage(result.message); 
+        } else {
+            navigate("/private"); 
         }
-
-        sessionStorage.setItem("userEmail", email);
-        sessionStorage.setItem("token", "fake-jwt-token");
-        setUserEmail(email);
-        navigate("/");
     };
 
     return (
         <div className="container mt-5">
-            <div className="card p-4 shadow" style={{ backgroundColor: '#f8f9fa', maxWidth: '500px', margin: 'auto' }}>
+            <div className="bg-light p-4 rounded shadow-sm" style={{ maxWidth: "500px", margin: "0 auto" }}>
                 <h2 className="text-center">Iniciar Sesión</h2>
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group mb-3">
-                        <label htmlFor="email">Correo Electrónico:</label>
+                <form onSubmit={handleSubmit} className="mx-auto">
+                    <div className="mb-3">
+                        <label htmlFor="email" className="form-label">Correo Electrónico:</label>
                         <input
                             type="email"
                             id="email"
@@ -42,8 +36,8 @@ const Login = () => {
                             required
                         />
                     </div>
-                    <div className="form-group mb-3">
-                        <label htmlFor="password">Contraseña:</label>
+                    <div className="mb-3">
+                        <label htmlFor="password" className="form-label">Contraseña:</label>
                         <input
                             type="password"
                             id="password"
@@ -53,7 +47,7 @@ const Login = () => {
                             required
                         />
                     </div>
-                    {errorMessage && <p className="text-danger">{errorMessage}</p>}
+                    {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
                     <button type="submit" className="btn btn-primary w-100">Iniciar Sesión</button>
                 </form>
             </div>

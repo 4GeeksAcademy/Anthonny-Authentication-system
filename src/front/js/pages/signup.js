@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { Context } from "../store/appContext";
 
 const Signup = () => {
     const [email, setEmail] = useState("");
@@ -7,8 +9,9 @@ const Signup = () => {
     const [confirmPassword, setConfirmPassword] = useState(""); 
     const [errorMessage, setErrorMessage] = useState(null);
     const navigate = useNavigate();
+    const { actions } = useContext(Context); 
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (password !== confirmPassword) {
@@ -16,19 +19,13 @@ const Signup = () => {
             return;
         }
 
-        const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
-        const userExists = existingUsers.some((user) => user.email === email);
+        const result = await actions.signup(email, password); 
 
-        if (userExists) {
-            setErrorMessage("El usuario ya existe");
-            return;
+        if (!result.success) {
+            setErrorMessage(result.message); 
+        } else {
+            navigate("/login");
         }
-
-        const newUser = { email, password };
-        existingUsers.push(newUser);
-        localStorage.setItem("users", JSON.stringify(existingUsers));
-
-        navigate("/login");
     };
 
     return (
